@@ -13,3 +13,5 @@ pub struct Sequence {
     files : ::std::vec::Vec<::std::path::PathBuf>, // TODO: efficiency?
     attachment : ::std::option::Option<Attachment>
 }
+
+pub type Sequences = ::std::vec::Vec<Sequence>;
