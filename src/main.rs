@@ -8,13 +8,29 @@ fn print_seq(seq : &file_sequencer::sequence::Sequence) -> () {
     }
 }
 
+struct Args {
+    pub sequences_path : std::path::PathBuf
+}
+
+impl Args {
+    pub fn parse_args(mut args_it : std::env::Args) -> Args {
+        let _ = args_it.next(); // skip first arg, it's our exec name instead of a real arg
+        let first_arg : std::string::String = args_it.next()
+            .expect("Needs one positional argument: the path of the sequences file.");
+        // copy from args into PathBuf
+        let path : Result<std::path::PathBuf, std::convert::Infallible> =
+            <std::path::PathBuf as std::str::FromStr>::from_str(first_arg.as_str());
+        Args{sequences_path : path.unwrap()}
+    }
+}
+
 fn main() {
-    let sequences_path = std::path::Path::new("./fsequencer.txt"); // TODO
-    let dir = sequences_path.parent()
+    let args : Args = Args::parse_args(std::env::args());
+    let dir = args.sequences_path.parent()
         .expect("Sequences file was somehow not inside a directory?");
 
     // Load the seq and prepare to apply it
-    let seq : file_sequencer::sequence::Sequences = file_sequencer::load(sequences_path)
+    let seq : file_sequencer::sequence::Sequences = file_sequencer::load(args.sequences_path.as_path())
         .expect("Could not load sequences file");
     let att_map : std::collections::hash_map::HashMap<&str, &file_sequencer::sequence::Sequence>
         = file_sequencer::create_attachment_point_map(&seq);
