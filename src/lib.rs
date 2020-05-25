@@ -52,13 +52,27 @@ pub fn create_attachment_point_map(sequences : &sequence::Sequences)
     ret
 }
 
-pub fn lookup_by_os_str<'a, 'b>(
-    os_str : &std::ffi::OsStr,
-    map : &'b std::collections::hash_map::HashMap<&str, &'a sequence::Sequence>)
-    -> Result<Option<&'b &'a sequence::Sequence>, Error> {
-    match os_str.to_str() {
-        Some(s) => {Result::Ok(map.get(s))}
-        None    => {Result::Err(Error::FilenameUnicodeError)}
-    }
+/// Convert an `OsString` into a native (owned) `String`.
+///
+/// Danger: unknown performance implications.
+pub fn import_os_string(s : std::ffi::OsString) -> Result<String, Error> {
+    s.into_string().map_err(|_| Error::FilenameUnicodeError)
 }
 
+pub enum NameOrSeq<'a> {
+    Name(String),
+    Seq(&'a sequence::Sequence)
+}
+
+pub fn entry_to_name_or_seq<'a, 'b>(
+    maybe_entry : std::io::Result<std::fs::DirEntry>,
+    att_map : &std::collections::hash_map::HashMap<&str, &'a sequence::Sequence>)
+    -> Result<NameOrSeq<'a>, Error> {
+    let entry : std::fs::DirEntry = maybe_entry?;
+    let ffi_name : std::ffi::OsString = entry.file_name();
+    let name : String = import_os_string(ffi_name)?;
+    match att_map.get(name.as_str()) {
+        Option::Some(seq) => {Result::Ok(NameOrSeq::Seq(seq))}
+        Option::None      => {Result::Ok(NameOrSeq::Name(name))}
+    }
+}

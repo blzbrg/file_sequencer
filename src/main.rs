@@ -1,7 +1,6 @@
 extern crate file_sequencer;
 
 use std::result::Result;
-use std::option::Option;
 
 fn print_seq(seq : &file_sequencer::sequence::Sequence) -> () {
     for filename in &seq.files {
@@ -22,19 +21,10 @@ fn main() {
 
     // List the directory
     for maybe_entry in dir.read_dir().expect("Could not list items in directory") {
-        let entry : std::result::Result<std::fs::DirEntry, file_sequencer::Error>
-            = maybe_entry.map_err(file_sequencer::Error::from);
-        // TODO: avoid this expect
-        let ffi_name : std::ffi::OsString
-            = entry.expect("Could not read filename in directory").file_name();
-        match file_sequencer::lookup_by_os_str(&ffi_name, &att_map) {
-            Result::Ok(Option::Some(seq)) => {print_seq(seq)}
-            Result::Ok(Option::None) => {println!("{}", ffi_name.to_str().unwrap())}
-            Result::Err(file_sequencer::Error::FilenameUnicodeError) => {
-                eprintln!("Warning: could not convert {} to unicode, ignoring",
-                          ffi_name.to_string_lossy());
-            }
-            Result::Err(e) => {panic!(e)}
+        match file_sequencer::entry_to_name_or_seq(maybe_entry, &att_map) {
+            Result::Ok(file_sequencer::NameOrSeq::Name(name)) => {println!("{}", name)}
+            Result::Ok(file_sequencer::NameOrSeq::Seq(seq)) => {print_seq(seq)}
+            Result::Err(e) => {eprintln!("{:?}", e)}
         }
     }
 }
