@@ -39,6 +39,10 @@ pub fn save(sequences_path : &::std::path::Path, sequences : sequence::Sequences
             .map_err(Error::from)
 }
 
+/// Create a map from filename to the sequence attached at that name.
+///
+/// Each key is a sequence attachment point and each value is a sequence. This will arbitrarily
+/// select one sequence to discard if two sequences have the same attachment point.
 pub fn create_attachment_point_map(sequences : &sequence::Sequences)
                                    -> std::collections::hash_map::HashMap<&str, &sequence::Sequence> {
     let mut ret = std::collections::hash_map::HashMap::new();
@@ -64,6 +68,11 @@ pub enum NameOrSeq<'a> {
     Seq(&'a sequence::Sequence)
 }
 
+/// Process an actual filename from the directory listing, either passing it through unchanged, or
+/// fetching the appropriate `Sequence` to replace it.
+///
+/// The sequences are reference into the map, whereas the strings are returned by value, since
+/// `DirEntry` only gives back filenames by-value.
 pub fn entry_to_name_or_seq<'a, 'b>(
     maybe_entry : std::io::Result<std::fs::DirEntry>,
     att_map : &std::collections::hash_map::HashMap<&str, &'a sequence::Sequence>)
