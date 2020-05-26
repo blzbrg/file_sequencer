@@ -39,17 +39,20 @@ pub fn save(sequences_path : &::std::path::Path, sequences : sequence::Sequences
             .map_err(Error::from)
 }
 
-/// Create a map from filename to the sequence attached at that name.
+/// Map from filename to the sequence attached at that name.
 ///
-/// Each key is a sequence attachment point and each value is a sequence. This will arbitrarily
-/// select one sequence to discard if two sequences have the same attachment point.
+/// Each key is a sequence attachment point and each value is a sequence.
+pub type AttachmentPointMap<'a> = std::collections::hash_map::HashMap<&'a str, &'a sequence::Sequence>;
+
+/// Create an `AttachmentPointMap`
+///
+/// This will arbitrarily select one sequence to discard if two sequences have the same attachment
+/// point.
 pub fn create_attachment_point_map(sequences : &sequence::Sequences)
-                                   -> std::collections::hash_map::HashMap<&str, &sequence::Sequence> {
-    let mut ret = std::collections::hash_map::HashMap::new();
-    for seq in sequences {
-        ret.insert(seq.attachment_point(), seq);
-    }
-    ret
+                                   -> AttachmentPointMap {
+    use std::iter::FromIterator;
+    let kv_iter = sequences.iter().map(|seq| (seq.attachment_point(), seq));
+    AttachmentPointMap::from_iter(kv_iter)
 }
 
 /// Convert an `OsString` into a native (owned) `String`.
@@ -71,7 +74,7 @@ pub enum NameOrSeq<'a> {
 /// `DirEntry` only gives back filenames by-value.
 pub fn entry_to_name_or_seq<'a, 'b>(
     maybe_entry : std::io::Result<std::fs::DirEntry>,
-    att_map : &std::collections::hash_map::HashMap<&str, &'a sequence::Sequence>)
+    att_map : &AttachmentPointMap<'a>)
     -> Result<NameOrSeq<'a>, Error> {
     let entry : std::fs::DirEntry = maybe_entry?;
     let ffi_name : std::ffi::OsString = entry.file_name();

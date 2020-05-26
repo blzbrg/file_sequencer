@@ -1,3 +1,7 @@
+//! The API for sequences. This library contains the data-model for the file format and methods for
+//! asking questions directly of the data. Complicated manipulations
+//! (eg. `create_attachment_point_map`) are deliberately elsewhere to keep this file focused.
+
 /// How the sequenece should be placed into the "natural" order of files.
 ///
 /// For `FirstFile` or `LastFile` the sequence is placed where the first or last file, respectively,
