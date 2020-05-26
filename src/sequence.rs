@@ -43,3 +43,13 @@ impl Sequence {
 
 /// Collection of `Sequence`s. This is what serde will return when deserializing a json list.
 pub type Sequences = ::std::vec::Vec<Sequence>;
+
+/// Type representing the entire file.
+///
+/// If possible, fields should only be changed in this in a backwards compatible way:
+/// - newly added fields should be optional (with defaults)
+/// - instead of removing a mandatory field, change it to optional
+#[derive(serde::Serialize, serde::Deserialize)]
+pub struct SequencesFile {
+    pub sequences : Sequences,
+}

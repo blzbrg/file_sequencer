@@ -30,10 +30,11 @@ fn main() {
         .expect("Sequences file was somehow not inside a directory?");
 
     // Load the seq and prepare to apply it
-    let seq : file_sequencer::sequence::Sequences = file_sequencer::load(args.sequences_path.as_path())
+    let seq_file : file_sequencer::sequence::SequencesFile =
+        file_sequencer::load(args.sequences_path.as_path())
         .expect("Could not load sequences file");
     let att_map : file_sequencer::AttachmentPointMap =
-        file_sequencer::create_attachment_point_map(&seq);
+        file_sequencer::create_attachment_point_map(&seq_file.sequences);
 
     // List the directory
     for maybe_entry in dir.read_dir().expect("Could not list items in directory") {
