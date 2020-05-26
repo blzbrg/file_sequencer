@@ -10,3 +10,7 @@ serde_json = "1.0.53"
 [lib]
 name = "file_sequencer"
 path = "src/lib.rs"
+
+[[bin]]
+name = "file-sequencer"
+path = "src/main.rs"
