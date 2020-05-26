@@ -47,11 +47,7 @@ pub fn create_attachment_point_map(sequences : &sequence::Sequences)
                                    -> std::collections::hash_map::HashMap<&str, &sequence::Sequence> {
     let mut ret = std::collections::hash_map::HashMap::new();
     for seq in sequences {
-        let attach_point : &str = match seq.effective_attachment() {
-            sequence::Attachment::FirstFile => {seq.files[0].as_str()}
-            sequence::Attachment::LastFile  => {seq.files[seq.files.len() - 1].as_str()}
-        };
-        ret.insert(attach_point, seq);
+        ret.insert(seq.attachment_point(), seq);
     }
     ret
 }

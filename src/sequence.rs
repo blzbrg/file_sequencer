@@ -25,6 +25,16 @@ impl Sequence {
             Some(a) => {a}
         }
     }
+
+    /// Return the filename at which this sequence is attached. This is one of the filenames in the
+    /// sequence; which one is determined by the `effective_attachment`.
+    pub fn attachment_point<'a>(self : &'a Self) -> &'a str {
+        let filename : &String = match self.effective_attachment() {
+            Attachment::FirstFile => {&self.files[0]}
+            Attachment::LastFile  => {&self.files[self.files.len() - 1]}
+        };
+        filename.as_str()
+    }
 }
 
 /// Collection of `Sequence`s. This is what serde will return when deserializing a json list.
