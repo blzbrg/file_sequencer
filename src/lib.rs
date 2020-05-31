@@ -35,7 +35,7 @@ pub fn save(sequences_path : &::std::path::Path, sequences : sequence::Sequences
             -> Result<(), Error> {
     let file = ::std::fs::OpenOptions::new().write(true).create(true)
             .open(sequences_path)?;
-        serde_json::to_writer(file, &sequences)
+        serde_json::to_writer_pretty(file, &sequences)
             .map_err(Error::from)
 }
 
