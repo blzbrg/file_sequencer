@@ -48,10 +48,18 @@ pub type AttachmentPointMap<'a> = std::collections::hash_map::HashMap<&'a str, &
 ///
 /// This will arbitrarily select one sequence to discard if two sequences have the same attachment
 /// point.
+///
+/// This handles sequences with no valid attachment point (eg. if there are no files) by simply
+/// ignoring them. Calling code may want to filter these out by providing a useful error to the
+/// user, but this function is written defensively to avoid crashing when encountering such a
+/// sequence.
 pub fn create_attachment_point_map(sequences : &sequence::Sequences)
                                    -> AttachmentPointMap {
     use std::iter::FromIterator;
-    let kv_iter = sequences.iter().map(|seq| (seq.attachment_point(), seq));
+    let kv_iter= sequences.iter().filter_map(
+        |seq| match seq.attachment_point() {
+            Option::Some(at) => {Option::Some((at, seq))}
+            Option::None     => {Option::None}});
     AttachmentPointMap::from_iter(kv_iter)
 }
 
