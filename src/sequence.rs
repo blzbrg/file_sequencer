@@ -14,6 +14,15 @@ pub enum Attachment {
     LastFile
 }
 
+impl core::fmt::Display for Attachment {
+    fn fmt(&self, f : &mut core::fmt::Formatter) -> core::fmt::Result {
+        f.write_str(match self {
+            Attachment::FirstFile => {"FirstFile"}
+            Attachment::LastFile  => {"LastFile"}
+        })
+    }
+}
+
 #[derive(serde::Serialize, serde::Deserialize)]
 pub struct Sequence {
     pub files : ::std::vec::Vec<::std::string::String>, // TODO: efficiency?

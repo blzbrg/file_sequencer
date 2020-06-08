@@ -1,6 +1,7 @@
 extern crate serde;
 
 pub mod sequence;
+pub mod validate;
 
 use std::result::Result;
 use std::option::Option;
@@ -53,7 +54,7 @@ pub type AttachmentPointMap<'a> = std::collections::hash_map::HashMap<&'a str, &
 /// ignoring them. Calling code may want to filter these out by providing a useful error to the
 /// user, but this function is written defensively to avoid crashing when encountering such a
 /// sequence.
-pub fn create_attachment_point_map(sequences : &sequence::Sequences)
+pub fn create_attachment_point_map(sequences : &[sequence::Sequence])
                                    -> AttachmentPointMap {
     use std::iter::FromIterator;
     let kv_iter= sequences.iter().filter_map(
