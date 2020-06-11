@@ -33,15 +33,36 @@ fn main() {
     let seq_file : file_sequencer::sequence::SequencesFile =
         file_sequencer::load(args.sequences_path.as_path())
         .expect("Could not load sequences file");
-    let att_map : file_sequencer::AttachmentPointMap =
-        file_sequencer::create_attachment_point_map(&seq_file.sequences);
+
+    // Set up for validation
+    let dir_entries : std::collections::HashSet<String> = file_sequencer::fs::list(dir)
+        .expect("Could not list items in director");
+
+    // Validate them
+    let filter_and_warn = |s : &&file_sequencer::sequence::Sequence| {
+        // TODO why the fuck does this need to be double-referenced, and why does it not type-infer
+        // that?
+        match file_sequencer::validate::attachment_point_in_dir(&dir_entries, s) {
+            None => {true}
+            Some(invalid) => {eprintln!("Ignoring {} because {}",
+                                        file_sequencer::validate::show_sequence(s),
+                                        invalid.explain());
+                              false}
+        }
+    };
+    let valid_seqs : Vec<&file_sequencer::sequence::Sequence> =
+        seq_file.sequences.iter().filter(filter_and_warn).collect();
+
+    // Construct att map
+    let att_map : std::collections::HashMap<&str, Vec<&file_sequencer::sequence::Sequence>>
+        = file_sequencer::validate::attachment_point_map(valid_seqs.as_ref());
 
     // List the directory
-    for maybe_entry in dir.read_dir().expect("Could not list items in directory") {
-        match file_sequencer::entry_to_name_or_seq(maybe_entry, &att_map) {
-            Result::Ok(file_sequencer::NameOrSeq::Name(name)) => {println!("{}", name)}
-            Result::Ok(file_sequencer::NameOrSeq::Seq(seq)) => {print_seq(seq)}
-            Result::Err(e) => {eprintln!("{:?}", e)}
+    for entry in dir_entries {
+        match att_map.get(entry.as_str()) {
+            // Arbitrarily choose the first when there are duplicates
+            Some(seqs) => {print_seq(seqs[0])}
+            None       => {println!("{}", entry)}
         }
     }
 }
