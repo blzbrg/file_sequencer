@@ -14,6 +14,15 @@ pub enum Attachment {
     LastFile
 }
 
+impl core::fmt::Display for Attachment {
+    fn fmt(&self, f : &mut core::fmt::Formatter) -> core::fmt::Result {
+        f.write_str(match self {
+            Attachment::FirstFile => {"FirstFile"}
+            Attachment::LastFile  => {"LastFile"}
+        })
+    }
+}
+
 #[derive(serde::Serialize, serde::Deserialize)]
 pub struct Sequence {
     pub files : ::std::vec::Vec<::std::string::String>, // TODO: efficiency?
@@ -32,12 +41,20 @@ impl Sequence {
 
     /// Return the filename at which this sequence is attached. This is one of the filenames in the
     /// sequence; which one is determined by the `effective_attachment`.
-    pub fn attachment_point<'a>(self : &'a Self) -> &'a str {
-        let filename : &String = match self.effective_attachment() {
-            Attachment::FirstFile => {&self.files[0]}
-            Attachment::LastFile  => {&self.files[self.files.len() - 1]}
-        };
-        filename.as_str()
+    ///
+    /// This returns None iff there are no files listed in the sequence. It is desirable to parse
+    /// this sequence to a) be forgiving of user mistakes and b) handle partially-created or
+    /// partially-delteted sequences gracefully/
+    pub fn attachment_point<'a>(self : &'a Self) -> Option<&'a str> {
+        if self.files.is_empty() {
+            Option::None
+        } else {
+            let filename : &String = match self.effective_attachment() {
+                Attachment::FirstFile => {&self.files[0]}
+                Attachment::LastFile  => {&self.files[self.files.len() - 1]}
+            };
+            Option::Some(filename.as_str())
+        }
     }
 }
 
